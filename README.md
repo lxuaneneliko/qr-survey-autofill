@@ -6,7 +6,7 @@
 
 ## 下載 APK
 
-[前往 GitHub Releases 下載最新版](https://github.com/lxuaneneliko/qr-survey-autofill/releases/latest)
+[前往 GitHub Releases 下載 APK](https://github.com/lxuaneneliko/qr-survey-autofill/releases)
 
 目前測試版本使用 Android Debug Key 簽章，適合自行安裝與功能測試，沒有上架 Google Play。
 
