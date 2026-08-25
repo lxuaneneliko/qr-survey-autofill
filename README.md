@@ -41,7 +41,7 @@ App 使用本機固定規則產生測試內容，例如姓名、Email、電話�
 
 ## 本機建置
 
-需求：Node.js 20+、Java 21、Android SDK。
+需求：Node.js 22+、Java 21、Android SDK。
 
 ```powershell
 npm.cmd install
