@@ -1,0 +1,23 @@
+{
+  "name": "qr-survey-autofill",
+  "version": "1.1.0",
+  "private": false,
+  "description": "掃描表單 QR Code，在 Android App 內自動填寫支援的題型並停在提交前。",
+  "type": "module",
+  "scripts": {
+    "check": "node --check web/app.js && node --check android/app/src/main/assets/form_autofill.js",
+    "android:sync": "npx cap sync android",
+    "android:apk:windows": "npm run android:sync && cd android && gradlew.bat :app:assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.0",
+    "@capacitor/barcode-scanner": "3.1.1",
+    "@capacitor/core": "8.5.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.4.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

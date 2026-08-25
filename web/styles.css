@@ -1,0 +1,79 @@
+:root {
+  --ink: #132a24;
+  --ink-dark: #091914;
+  --paper: #f3f1e9;
+  --lime: #caff52;
+  --muted: #71887f;
+  --line: rgba(19, 42, 36, 0.16);
+  font-family: "Avenir Next", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { margin: 0; background: var(--paper); -webkit-font-smoothing: antialiased; }
+button { font: inherit; }
+svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.app-shell {
+  min-height: 100svh;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: radial-gradient(circle at 75% 16%, rgba(202,255,82,.14), transparent 26%), var(--paper);
+}
+.grain { position: absolute; inset: 0; pointer-events: none; opacity: .3; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E"); }
+.header { min-height: 82px; z-index: 2; padding: max(18px, env(safe-area-inset-top)) clamp(22px, 5vw, 58px) 12px; display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 11px; }
+.brand-mark { width: 41px; height: 41px; display: grid; place-items: center; color: var(--lime); background: var(--ink); border-radius: 13px 13px 4px 13px; }
+.brand-mark svg { width: 20px; height: 20px; }
+.brand strong, .brand small { display: block; }
+.brand strong { font: 500 20px/1 "Iowan Old Style", "Noto Serif TC", serif; letter-spacing: .12em; }
+.brand small { margin-top: 5px; color: var(--muted); font-size: 7px; font-weight: 800; letter-spacing: .16em; }
+.privacy-chip { color: #587168; border: 1px solid var(--line); border-radius: 30px; padding: 8px 11px; font-size: 9px; font-weight: 700; }
+
+.stage { z-index: 1; width: min(100%, 920px); margin: auto; padding: 22px clamp(22px, 7vw, 84px) 28px; display: grid; grid-template-columns: minmax(280px, 1fr) minmax(250px, .86fr); align-items: center; gap: clamp(36px, 7vw, 82px); }
+.scanner-window { width: min(100%, 430px); aspect-ratio: 1; position: relative; overflow: hidden; border-radius: 32px 32px 8px 32px; color: rgba(202,255,82,.24); background: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px), radial-gradient(circle at center,#1d3a32,var(--ink-dark) 72%); background-size: 34px 34px, 34px 34px, auto; box-shadow: 0 28px 70px rgba(12,34,28,.25); }
+.scanner-window::after { content: ""; position: absolute; inset: 12%; border: 1px dashed rgba(202,255,82,.16); border-radius: 22px; }
+.qr-ghost { width: 92px; height: 92px; position: absolute; inset: 50% auto auto 50%; transform: translate(-50%,-50%); stroke-width: 1.25; }
+.corner { position: absolute; z-index: 2; width: 52px; height: 52px; border-color: var(--lime); border-style: solid; }
+.corner.a { left: 10%; top: 10%; border-width: 3px 0 0 3px; }
+.corner.b { right: 10%; top: 10%; border-width: 3px 3px 0 0; }
+.corner.c { left: 10%; bottom: 10%; border-width: 0 0 3px 3px; }
+.corner.d { right: 10%; bottom: 10%; border-width: 0 3px 3px 0; }
+.focus-dot { position: absolute; width: 7px; height: 7px; left: 50%; top: 50%; border-radius: 50%; background: var(--lime); transform: translate(-50%,-50%); box-shadow: 0 0 0 6px rgba(202,255,82,.08); }
+.beam { display: none; position: absolute; z-index: 3; height: 2px; left: 11%; right: 11%; top: 15%; background: linear-gradient(90deg,transparent,var(--lime),transparent); box-shadow: 0 0 20px rgba(202,255,82,.8); animation: beam 2.4s ease-in-out infinite; }
+.is-busy .beam { display: block; }
+.has-error .corner { border-color: #ff8f6b; }
+@keyframes beam { 50% { top: 84%; } }
+
+.copy { align-self: center; }
+.eyebrow { color: #658078; font-size: 9px; font-weight: 800; letter-spacing: .2em; }
+h1 { margin: 13px 0 14px; font: 500 clamp(39px,5vw,61px)/1.12 "Iowan Old Style", "Noto Serif TC", serif; letter-spacing: .015em; }
+h1 em { color: #487062; font-style: normal; }
+#status { min-height: 34px; margin: 0 0 18px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+#status.error { color: #b45d43; }
+#scanButton { width: 100%; min-height: 58px; border: 0; border-radius: 14px 14px 5px 14px; padding: 0 17px 0 7px; display: flex; align-items: center; gap: 12px; color: var(--ink); background: var(--lime); box-shadow: 0 16px 30px rgba(143,187,50,.19); font-size: 12px; font-weight: 800; cursor: pointer; }
+#scanButton > span { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; color: var(--lime); background: var(--ink); }
+#scanButton > span svg { width: 22px; height: 22px; }
+#scanButton .arrow { margin-left: auto; width: 19px; }
+#scanButton:disabled { opacity: .76; cursor: wait; }
+
+.footer { min-height: 82px; z-index: 2; border-top: 1px solid var(--line); padding: 15px clamp(22px,5vw,58px) max(15px,env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 13px; }
+.footer span { font: 12px "Iowan Old Style", serif; }
+.footer i { width: 48px; height: 1px; background: var(--line); }
+.footer p { max-width: 620px; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
+
+@media (max-width: 680px) {
+  .header { min-height: 72px; }
+  .stage { width: 100%; grid-template-columns: 1fr; gap: 19px; padding: 13px 22px 25px; }
+  .scanner-window { width: min(72vw, 330px); justify-self: center; border-radius: 26px 26px 7px 26px; }
+  .copy { text-align: center; }
+  h1 { margin: 8px 0; font-size: clamp(34px,10.5vw,46px); }
+  #scanButton { width: min(100%,360px); margin: auto; }
+  .footer { min-height: 72px; }
+}
+@media (max-height: 720px) and (max-width: 680px) { .scanner-window { width: min(54vw,270px); } h1 { font-size: 34px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }

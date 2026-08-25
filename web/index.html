@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#132a24" />
+    <meta name="color-scheme" content="light" />
+    <title>掃表｜不想填表單？幫你填</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <div class="grain" aria-hidden="true"></div>
+      <header class="header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3M21 21h.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16h.01M16 12h1M21 12h.01M12 21v-1"/></svg>
+          </span>
+          <span><strong>掃表</strong><small>QR SURVEY AUTOFILL</small></span>
+        </div>
+        <span class="privacy-chip">不儲存答案</span>
+      </header>
+
+      <section class="stage">
+        <div id="scannerWindow" class="scanner-window" aria-label="QR Code 掃描區">
+          <i class="corner a"></i><i class="corner b"></i><i class="corner c"></i><i class="corner d"></i>
+          <svg class="qr-ghost" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3M21 21h.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16h.01M16 12h1M21 12h.01M12 21v-1"/></svg>
+          <span class="beam" aria-hidden="true"></span>
+          <span class="focus-dot" aria-hidden="true"></span>
+        </div>
+
+        <div class="copy">
+          <span class="eyebrow">SCAN TO AUTOFILL</span>
+          <h1>不想填表單？<br><em>幫你填。</em></h1>
+          <p id="status" role="status" aria-live="polite">將 QR Code 對準鏡頭即可</p>
+          <button id="scanButton" type="button">
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            </span>
+            <b id="buttonLabel">開始掃描</b>
+            <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>01</span><i></i>
+        <p>掃描 HTTPS 表單後自動填寫支援的題型；答案不會自動提交，請先檢查再自行送出。</p>
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

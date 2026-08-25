@@ -1,0 +1,10 @@
+{
+  "appId": "com.lxuan.qrsurvey",
+  "appName": "掃表",
+  "webDir": "web",
+  "backgroundColor": "#132a24",
+  "android": {
+    "backgroundColor": "#132a24",
+    "allowMixedContent": false
+  }
+}
