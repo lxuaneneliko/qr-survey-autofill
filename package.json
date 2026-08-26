@@ -1,6 +1,6 @@
 {
   "name": "qr-survey-autofill",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": false,
   "description": "掃描表單 QR Code，在 Android App 內自動填寫支援的題型並停在提交前。",
   "type": "module",

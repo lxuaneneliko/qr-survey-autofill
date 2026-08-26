@@ -8,6 +8,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(FormAutofillPlugin.class);
         registerPlugin(GalleryQrPlugin.class);
+        registerPlugin(ProfilePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

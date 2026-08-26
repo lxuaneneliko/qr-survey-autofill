@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app-shell">
+    <main id="homePage" class="app-shell">
       <div class="grain" aria-hidden="true"></div>
       <header class="header">
         <div class="brand">
@@ -18,7 +18,11 @@
           </span>
           <span><strong>掃表</strong><small>QR SURVEY AUTOFILL</small></span>
         </div>
-        <span class="privacy-chip">不儲存答案</span>
+        <button id="profileOpenButton" class="profile-chip" type="button">
+          <span>右滑</span>基本資料
+          <b id="profileCount" hidden></b>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+        </button>
       </header>
 
       <section class="stage">
@@ -57,6 +61,77 @@
         <span aria-hidden="true">＋</span>
       </button>
     </main>
+
+    <section id="profilePage" class="profile-page" aria-hidden="true">
+      <div class="profile-grain" aria-hidden="true"></div>
+      <header class="profile-header">
+        <button id="profileBackButton" class="profile-back" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          返回掃描
+        </button>
+        <span class="local-badge"><i></i>只存在這台裝置</span>
+      </header>
+
+      <div class="profile-layout">
+        <div class="profile-intro">
+          <span class="eyebrow">MY AUTOFILL PROFILE</span>
+          <h2>先告訴掃表，<br><em>你是誰。</em></h2>
+          <p>遇到相似題目時，會優先使用這裡的資料；沒填的欄位仍由原本規則產生回答。</p>
+          <div class="profile-rule" aria-hidden="true"><span>01</span><i></i><b>辨識題目</b><span>02</span><i></i><b>套用資料</b></div>
+        </div>
+
+        <form id="profileForm" class="profile-form" autocomplete="on">
+          <div class="field-grid">
+            <label class="profile-field field-wide">
+              <span><b>01</b>姓名</span>
+              <input id="profileName" name="name" type="text" autocomplete="name" placeholder="例如：王小明" />
+            </label>
+            <label class="profile-field field-wide">
+              <span><b>02</b>大學／學校</span>
+              <input id="profileUniversity" name="university" type="text" autocomplete="organization" placeholder="例如：國立臺灣海洋大學" />
+            </label>
+            <label class="profile-field">
+              <span><b>03</b>系所</span>
+              <input id="profileDepartment" name="department" type="text" placeholder="例如：資訊工程學系" />
+            </label>
+            <label class="profile-field">
+              <span><b>04</b>年級</span>
+              <select id="profileGrade" name="grade">
+                <option value="">尚未設定</option>
+                <option value="大一">大一</option>
+                <option value="大二">大二</option>
+                <option value="大三">大三</option>
+                <option value="大四">大四</option>
+                <option value="大五以上">大五以上</option>
+                <option value="研究所">研究所</option>
+                <option value="其他">其他</option>
+              </select>
+            </label>
+            <label class="profile-field">
+              <span><b>05</b>學號</span>
+              <input id="profileStudentId" name="studentId" type="text" inputmode="text" placeholder="選填" />
+            </label>
+            <label class="profile-field">
+              <span><b>06</b>手機</span>
+              <input id="profilePhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="選填" />
+            </label>
+            <label class="profile-field field-wide">
+              <span><b>07</b>Email</span>
+              <input id="profileEmail" name="email" type="email" autocomplete="email" inputmode="email" placeholder="選填" />
+            </label>
+          </div>
+
+          <p id="profileStatus" class="profile-status" role="status" aria-live="polite">所有欄位皆為選填，儲存後可隨時修改。</p>
+          <div class="profile-actions">
+            <button class="profile-save" type="submit">
+              儲存基本資料
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+            <button id="profileClearButton" class="profile-clear" type="button">清除全部</button>
+          </div>
+        </form>
+      </div>
+    </section>
     <script src="app.js"></script>
   </body>
 </html>

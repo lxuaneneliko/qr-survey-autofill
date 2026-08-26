@@ -188,7 +188,10 @@ public class FormFillActivity extends AppCompatActivity {
     private void injectAutofill(long delayMillis) {
         handler.postDelayed(() -> {
             if (webView != null && !autofillScript.isEmpty()) {
-                webView.evaluateJavascript(autofillScript, null);
+                String profileBootstrap = "window.__qrSurveyProfile = "
+                    + ProfilePlugin.readProfile(FormFillActivity.this).toString()
+                    + ";\n";
+                webView.evaluateJavascript(profileBootstrap + autofillScript, null);
             }
         }, delayMillis);
     }
@@ -229,9 +232,11 @@ public class FormFillActivity extends AppCompatActivity {
                     int filled = report.optInt("filled", 0);
                     int total = report.optInt("total", 0);
                     int unsupported = report.optInt("unsupported", 0);
+                    int personalized = report.optInt("personalized", 0);
                     if (filled > 0) {
                         String suffix = unsupported > 0 ? "，另有 " + unsupported + " 題需手動處理" : "";
-                        statusView.setText("已自動填寫 " + filled + "／" + total + " 題" + suffix);
+                        String profilePrefix = personalized > 0 ? "已套用基本資料 " + personalized + " 題；" : "";
+                        statusView.setText(profilePrefix + "已自動填寫 " + filled + "／" + total + " 題" + suffix);
                     } else if (total > 0) {
                         statusView.setText("找到題目，但這個表單需手動處理");
                     } else {
