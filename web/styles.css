@@ -61,6 +61,45 @@ h1 em { color: #487062; font-style: normal; }
 #scanButton .arrow { margin-left: auto; width: 19px; }
 #scanButton:disabled { opacity: .76; cursor: wait; }
 
+.gallery-fab {
+  position: fixed;
+  z-index: 8;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(96px, calc(env(safe-area-inset-bottom) + 88px));
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: var(--lime);
+  background: var(--ink);
+  border: 1px solid rgba(202,255,82,.2);
+  border-radius: 20px 20px 6px 20px;
+  box-shadow: 0 18px 40px rgba(9,25,20,.3), inset 0 1px rgba(255,255,255,.08);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+}
+.gallery-fab svg { width: 25px; height: 25px; stroke-width: 1.7; }
+.gallery-fab span {
+  position: absolute;
+  right: -3px;
+  top: -5px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: var(--lime);
+  border: 3px solid var(--paper);
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+}
+.gallery-fab:active { transform: translateY(2px) scale(.97); }
+.gallery-fab:disabled { opacity: .55; cursor: wait; }
+@media (hover: hover) { .gallery-fab:hover { transform: translateY(-3px); box-shadow: 0 22px 48px rgba(9,25,20,.34), inset 0 1px rgba(255,255,255,.08); } }
+
 .footer { min-height: 82px; z-index: 2; border-top: 1px solid var(--line); padding: 15px clamp(22px,5vw,58px) max(15px,env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 13px; }
 .footer span { font: 12px "Iowan Old Style", serif; }
 .footer i { width: 48px; height: 1px; background: var(--line); }
@@ -74,6 +113,7 @@ h1 em { color: #487062; font-style: normal; }
   h1 { margin: 8px 0; font-size: clamp(34px,10.5vw,46px); }
   #scanButton { width: min(100%,360px); margin: auto; }
   .footer { min-height: 72px; }
+  .gallery-fab { right: max(18px, env(safe-area-inset-right)); bottom: max(88px, calc(env(safe-area-inset-bottom) + 80px)); width: 58px; height: 58px; }
 }
 @media (max-height: 720px) and (max-width: 680px) { .scanner-window { width: min(54vw,270px); } h1 { font-size: 34px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
