@@ -172,6 +172,7 @@
       return;
     }
 
+    urlInput.blur();
     busy = true;
     try {
       await openAutofilledSurvey(rawUrl, "貼上的連結");
@@ -185,4 +186,6 @@
   button.addEventListener("click", startScan);
   galleryButton.addEventListener("click", scanGalleryImage);
   urlForm.addEventListener("submit", openPastedUrl);
+  urlInput.addEventListener("focus", () => document.body.classList.add("url-editing"));
+  urlInput.addEventListener("blur", () => document.body.classList.remove("url-editing"));
 })();
