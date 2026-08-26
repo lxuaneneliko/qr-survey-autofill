@@ -8,7 +8,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(FormAutofillPlugin.class);
         registerPlugin(GalleryQrPlugin.class);
-        registerPlugin(ProfilePlugin.class);
+        deleteSharedPreferences("qr_survey_profile");
         super.onCreate(savedInstanceState);
     }
 }

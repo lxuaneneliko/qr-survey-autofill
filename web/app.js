@@ -6,16 +6,9 @@
   const buttonLabel = document.getElementById("buttonLabel");
   const scannerWindow = document.getElementById("scannerWindow");
   const galleryButton = document.getElementById("galleryButton");
-  const homePage = document.getElementById("homePage");
-  const profilePage = document.getElementById("profilePage");
-  const profileOpenButton = document.getElementById("profileOpenButton");
-  const profileBackButton = document.getElementById("profileBackButton");
-  const profileClearButton = document.getElementById("profileClearButton");
-  const profileCount = document.getElementById("profileCount");
-  const profileForm = document.getElementById("profileForm");
-  const profileStatus = document.getElementById("profileStatus");
-  const profileFields = ["name", "university", "department", "grade", "studentId", "email", "phone"];
-  const webProfileKey = "qr_survey_profile_v1";
+  const urlForm = document.getElementById("urlForm");
+  const urlInput = document.getElementById("urlInput");
+  const urlOpenButton = document.getElementById("urlOpenButton");
   let busy = false;
   let hasScanned = false;
 
@@ -47,106 +40,25 @@
     status.classList.toggle("error", state === "error");
     button.disabled = state === "busy";
     galleryButton.disabled = state === "busy";
+    urlInput.disabled = state === "busy";
+    urlOpenButton.disabled = state === "busy";
     buttonLabel.textContent = state === "busy" ? "掃描中…" : hasScanned ? "再掃一份" : "開始掃描";
   }
 
-  function normalizedProfile(rawProfile) {
-    const profile = {};
-    for (const field of profileFields) profile[field] = String(rawProfile && rawProfile[field] || "").trim();
-    return profile;
-  }
-
-  function profileFromForm() {
-    return normalizedProfile(Object.fromEntries(new FormData(profileForm).entries()));
-  }
-
-  function renderProfile(profile) {
-    for (const field of profileFields) {
-      const control = profileForm.elements.namedItem(field);
-      if (control) control.value = profile[field] || "";
-    }
-    const completed = profileFields.filter((field) => profile[field]).length;
-    profileCount.hidden = completed === 0;
-    profileCount.textContent = String(completed);
-    profileOpenButton.setAttribute("aria-label", completed > 0 ? `基本資料已設定 ${completed} 項` : "右滑設定基本資料");
-  }
-
-  function setProfileStatus(message, state) {
-    profileStatus.textContent = message;
-    profileStatus.classList.toggle("is-success", state === "success");
-    profileStatus.classList.toggle("is-error", state === "error");
-  }
-
-  async function profileStore(method, profile) {
-    const nativeStore = plugin("Profile");
-    if (isNative()) {
-      if (!nativeStore || typeof nativeStore[method] !== "function") throw new Error("Profile plugin unavailable");
-      return nativeStore[method](profile || {});
-    }
-
-    if (method === "getProfile") {
-      try {
-        return JSON.parse(localStorage.getItem(webProfileKey) || "{}");
-      } catch {
-        return {};
-      }
-    }
-    if (method === "saveProfile") localStorage.setItem(webProfileKey, JSON.stringify(profile || {}));
-    if (method === "clearProfile") localStorage.removeItem(webProfileKey);
-    return method === "saveProfile" ? profile : {};
-  }
-
-  async function loadProfile() {
-    try {
-      const profile = normalizedProfile(await profileStore("getProfile"));
-      renderProfile(profile);
-      return profile;
-    } catch {
-      setProfileStatus("無法讀取基本資料，請重新開啟 App。", "error");
-      return normalizedProfile({});
-    }
-  }
-
-  function openProfile() {
-    profilePage.classList.add("is-open");
-    profilePage.setAttribute("aria-hidden", "false");
-    homePage.setAttribute("aria-hidden", "true");
-    homePage.inert = true;
-    document.body.classList.add("profile-open");
-    void loadProfile().then(() => window.setTimeout(() => profileForm.elements.namedItem("name")?.focus(), 180));
-  }
-
-  function closeProfile() {
-    profilePage.classList.remove("is-open");
-    profilePage.setAttribute("aria-hidden", "true");
-    homePage.removeAttribute("aria-hidden");
-    homePage.inert = false;
-    document.body.classList.remove("profile-open");
-    profileOpenButton.focus();
-  }
-
-  function bindHorizontalSwipe(element, direction, callback) {
-    let start = null;
-    element.addEventListener("pointerdown", (event) => {
-      if (event.target.closest("input, select, textarea, button")) return;
-      start = { x: event.clientX, y: event.clientY, time: Date.now() };
-    });
-    element.addEventListener("pointerup", (event) => {
-      if (!start) return;
-      const deltaX = event.clientX - start.x;
-      const deltaY = event.clientY - start.y;
-      const elapsed = Date.now() - start.time;
-      start = null;
-      const intended = direction === "right" ? deltaX > 72 : deltaX < -72;
-      if (intended && Math.abs(deltaX) > Math.abs(deltaY) * 1.25 && elapsed < 850) callback();
-    });
-    element.addEventListener("pointercancel", () => { start = null; });
+  function finishBusyState() {
+    busy = false;
+    button.disabled = false;
+    galleryButton.disabled = false;
+    urlInput.disabled = false;
+    urlOpenButton.disabled = false;
+    buttonLabel.textContent = hasScanned ? "再掃一份" : "開始掃描";
+    scannerWindow.classList.remove("is-busy");
   }
 
   async function openAutofilledSurvey(rawValue, sourceLabel) {
     const url = safeSurveyUrl(rawValue);
     if (!url) {
-      setState(`${sourceLabel} QR Code 不是安全的 HTTPS 表單網址`, "error");
+      setState(`${sourceLabel}：不是安全的 HTTPS 表單網址`, "error");
       return false;
     }
 
@@ -197,17 +109,13 @@
         setState("已取消，準備好可再次掃描", "ready");
         return;
       }
-      await openAutofilledSurvey(result.ScanResult, "相機掃到的");
+      await openAutofilledSurvey(result.ScanResult, "相機掃到的 QR Code");
     } catch (error) {
       const message = error && error.message ? error.message : String(error || "");
       if (/cancel/i.test(message)) setState("已取消，準備好可再次掃描", "ready");
       else setState("無法啟動掃描器，請確認相機權限後再試一次", "error");
     } finally {
-      busy = false;
-      button.disabled = false;
-      galleryButton.disabled = false;
-      buttonLabel.textContent = hasScanned ? "再掃一份" : "開始掃描";
-      scannerWindow.classList.remove("is-busy");
+      finishBusyState();
     }
   }
 
@@ -233,7 +141,7 @@
         setState("已取消選圖，準備好可再次掃描", "ready");
         return;
       }
-      await openAutofilledSurvey(result.ScanResult, "圖片中的");
+      await openAutofilledSurvey(result.ScanResult, "圖片中的 QR Code");
     } catch (error) {
       const code = String(error && error.code || "");
       const message = String(error && error.message || error || "");
@@ -243,51 +151,38 @@
         setState("無法辨識圖片，請換一張 QR Code 圖片再試一次", "error");
       }
     } finally {
-      busy = false;
-      button.disabled = false;
-      galleryButton.disabled = false;
-      buttonLabel.textContent = hasScanned ? "再掃一份" : "開始掃描";
-      scannerWindow.classList.remove("is-busy");
+      finishBusyState();
     }
   }
 
-  async function saveProfile(event) {
+  async function openPastedUrl(event) {
     event.preventDefault();
-    profileForm.classList.add("is-saving");
-    setProfileStatus("正在儲存到這台裝置…", "ready");
-    try {
-      const saved = normalizedProfile(await profileStore("saveProfile", profileFromForm()));
-      renderProfile(saved);
-      const completed = profileFields.filter((field) => saved[field]).length;
-      setProfileStatus(completed > 0 ? `已儲存 ${completed} 項；下次掃表會優先使用。` : "目前沒有填寫任何資料。", "success");
-    } catch {
-      setProfileStatus("儲存失敗，請重新開啟 App 後再試一次。", "error");
-    } finally {
-      profileForm.classList.remove("is-saving");
-    }
-  }
+    if (busy) return;
 
-  async function clearProfile() {
-    if (!window.confirm("確定要清除這台裝置上的全部基本資料嗎？")) return;
-    profileForm.classList.add("is-saving");
+    const rawUrl = urlInput.value.trim();
+    if (!rawUrl) {
+      setState("請先貼上 HTTPS 表單連結", "error");
+      urlInput.focus();
+      return;
+    }
+
+    if (!safeSurveyUrl(rawUrl)) {
+      setState("貼上的連結必須是完整的 HTTPS 網址", "error");
+      urlInput.focus();
+      return;
+    }
+
+    busy = true;
     try {
-      const cleared = normalizedProfile(await profileStore("clearProfile"));
-      renderProfile(cleared);
-      setProfileStatus("基本資料已全部清除。", "success");
+      await openAutofilledSurvey(rawUrl, "貼上的連結");
     } catch {
-      setProfileStatus("清除失敗，請稍後再試一次。", "error");
+      setState("無法開啟這個連結，請確認網址後再試一次", "error");
     } finally {
-      profileForm.classList.remove("is-saving");
+      finishBusyState();
     }
   }
 
   button.addEventListener("click", startScan);
   galleryButton.addEventListener("click", scanGalleryImage);
-  profileOpenButton.addEventListener("click", openProfile);
-  profileBackButton.addEventListener("click", closeProfile);
-  profileForm.addEventListener("submit", saveProfile);
-  profileClearButton.addEventListener("click", clearProfile);
-  bindHorizontalSwipe(homePage, "right", openProfile);
-  bindHorizontalSwipe(profilePage, "left", closeProfile);
-  void loadProfile();
+  urlForm.addEventListener("submit", openPastedUrl);
 })();

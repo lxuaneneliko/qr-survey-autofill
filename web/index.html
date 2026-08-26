@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main id="homePage" class="app-shell">
+    <main class="app-shell">
       <div class="grain" aria-hidden="true"></div>
       <header class="header">
         <div class="brand">
@@ -18,25 +18,31 @@
           </span>
           <span><strong>掃表</strong><small>QR SURVEY AUTOFILL</small></span>
         </div>
-        <button id="profileOpenButton" class="profile-chip" type="button">
-          <span>右滑</span>基本資料
-          <b id="profileCount" hidden></b>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-        </button>
+        <span class="privacy-chip">不儲存連結</span>
       </header>
 
       <section class="stage">
-        <div id="scannerWindow" class="scanner-window" aria-label="QR Code 掃描區">
-          <i class="corner a"></i><i class="corner b"></i><i class="corner c"></i><i class="corner d"></i>
-          <svg class="qr-ghost" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3M21 21h.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16h.01M16 12h1M21 12h.01M12 21v-1"/></svg>
-          <span class="beam" aria-hidden="true"></span>
-          <span class="focus-dot" aria-hidden="true"></span>
+        <div class="scanner-column">
+          <div id="scannerWindow" class="scanner-window" aria-label="QR Code 掃描區">
+            <i class="corner a"></i><i class="corner b"></i><i class="corner c"></i><i class="corner d"></i>
+            <svg class="qr-ghost" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3M21 21h.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16h.01M16 12h1M21 12h.01M12 21v-1"/></svg>
+            <span class="beam" aria-hidden="true"></span>
+            <span class="focus-dot" aria-hidden="true"></span>
+          </div>
+
+          <form id="urlForm" class="url-entry" autocomplete="off" novalidate>
+            <svg class="url-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+            <input id="urlInput" name="url" type="url" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" aria-label="貼上表單連結" placeholder="貼上表單連結…" />
+            <button id="urlOpenButton" type="submit" aria-label="開啟連結並自動填寫">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+          </form>
         </div>
 
         <div class="copy">
           <span class="eyebrow">SCAN TO AUTOFILL</span>
           <h1>不想填表單？<br><em>幫你填。</em></h1>
-          <p id="status" role="status" aria-live="polite">將 QR Code 對準鏡頭即可</p>
+          <p id="status" role="status" aria-live="polite">掃描 QR Code，或在掃描框下方貼上連結</p>
           <button id="scanButton" type="button">
             <span aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
@@ -49,7 +55,7 @@
 
       <footer class="footer">
         <span>01</span><i></i>
-        <p>掃描 HTTPS 表單後自動填寫支援的題型；答案不會自動提交，請先檢查再自行送出。</p>
+        <p>掃描、選圖或貼上 HTTPS 表單連結後自動填寫；答案不會自動提交，請先檢查再自行送出。</p>
       </footer>
 
       <button id="galleryButton" class="gallery-fab" type="button" aria-label="從圖庫選擇 QR Code 圖片">
@@ -62,76 +68,6 @@
       </button>
     </main>
 
-    <section id="profilePage" class="profile-page" aria-hidden="true">
-      <div class="profile-grain" aria-hidden="true"></div>
-      <header class="profile-header">
-        <button id="profileBackButton" class="profile-back" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-          返回掃描
-        </button>
-        <span class="local-badge"><i></i>只存在這台裝置</span>
-      </header>
-
-      <div class="profile-layout">
-        <div class="profile-intro">
-          <span class="eyebrow">MY AUTOFILL PROFILE</span>
-          <h2>先告訴掃表，<br><em>你是誰。</em></h2>
-          <p>遇到相似題目時，會優先使用這裡的資料；沒填的欄位仍由原本規則產生回答。</p>
-          <div class="profile-rule" aria-hidden="true"><span>01</span><i></i><b>辨識題目</b><span>02</span><i></i><b>套用資料</b></div>
-        </div>
-
-        <form id="profileForm" class="profile-form" autocomplete="on">
-          <div class="field-grid">
-            <label class="profile-field field-wide">
-              <span><b>01</b>姓名</span>
-              <input id="profileName" name="name" type="text" autocomplete="name" placeholder="例如：王小明" />
-            </label>
-            <label class="profile-field field-wide">
-              <span><b>02</b>大學／學校</span>
-              <input id="profileUniversity" name="university" type="text" autocomplete="organization" placeholder="例如：國立臺灣海洋大學" />
-            </label>
-            <label class="profile-field">
-              <span><b>03</b>系所</span>
-              <input id="profileDepartment" name="department" type="text" placeholder="例如：資訊工程學系" />
-            </label>
-            <label class="profile-field">
-              <span><b>04</b>年級</span>
-              <select id="profileGrade" name="grade">
-                <option value="">尚未設定</option>
-                <option value="大一">大一</option>
-                <option value="大二">大二</option>
-                <option value="大三">大三</option>
-                <option value="大四">大四</option>
-                <option value="大五以上">大五以上</option>
-                <option value="研究所">研究所</option>
-                <option value="其他">其他</option>
-              </select>
-            </label>
-            <label class="profile-field">
-              <span><b>05</b>學號</span>
-              <input id="profileStudentId" name="studentId" type="text" inputmode="text" placeholder="選填" />
-            </label>
-            <label class="profile-field">
-              <span><b>06</b>手機</span>
-              <input id="profilePhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="選填" />
-            </label>
-            <label class="profile-field field-wide">
-              <span><b>07</b>Email</span>
-              <input id="profileEmail" name="email" type="email" autocomplete="email" inputmode="email" placeholder="選填" />
-            </label>
-          </div>
-
-          <p id="profileStatus" class="profile-status" role="status" aria-live="polite">所有欄位皆為選填，儲存後可隨時修改。</p>
-          <div class="profile-actions">
-            <button class="profile-save" type="submit">
-              儲存基本資料
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-            </button>
-            <button id="profileClearButton" class="profile-clear" type="button">清除全部</button>
-          </div>
-        </form>
-      </div>
-    </section>
     <script src="app.js"></script>
   </body>
 </html>
