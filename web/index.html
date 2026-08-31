@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app-shell">
+    <main id="homePage" class="app-shell">
       <div class="grain" aria-hidden="true"></div>
       <header class="header">
         <div class="brand">
@@ -18,7 +18,11 @@
           </span>
           <span><strong>掃表</strong><small>QR SURVEY AUTOFILL</small></span>
         </div>
-        <span class="privacy-chip">不儲存連結</span>
+        <button id="profileOpenButton" class="profile-chip" type="button" aria-label="開啟我的基本資料">
+          <span>我的資料</span>
+          <b id="profileCount">0/5</b>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+        </button>
       </header>
 
       <section class="stage">
@@ -67,6 +71,72 @@
         <span aria-hidden="true">＋</span>
       </button>
     </main>
+
+    <section id="profilePage" class="profile-page" aria-hidden="true">
+      <div class="profile-grain" aria-hidden="true"></div>
+      <header class="profile-header">
+        <button id="profileBackButton" class="profile-back" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          返回掃描
+        </button>
+        <span class="local-badge"><i></i>只存在這台裝置</span>
+      </header>
+
+      <div class="profile-layout">
+        <div class="profile-intro">
+          <span class="eyebrow">MY VERIFIED AUTOFILL</span>
+          <h2>你的資料，<br><em>只填對的地方。</em></h2>
+          <p>掃表只在題意明確相符時套用；不確定的題目會留給你檢查，不會拿個人資料亂猜。</p>
+          <div class="profile-rule" aria-hidden="true">
+            <span>01</span><i></i><b>辨識題意</b>
+            <span>02</span><i></i><b>精確套用</b>
+            <span>03</span><i></i><b>顯示結果</b>
+          </div>
+        </div>
+
+        <form id="profileForm" class="profile-form" autocomplete="on">
+          <div class="profile-form-head">
+            <span>PERSONAL FIELDS</span>
+            <strong id="profileProgress">尚未設定</strong>
+          </div>
+          <div class="field-grid">
+            <label class="profile-field field-wide">
+              <span><b>01</b>姓名</span>
+              <input id="profileName" name="name" type="text" autocomplete="name" placeholder="例如：王小明" />
+            </label>
+            <label class="profile-field field-wide">
+              <span><b>02</b>Gmail／Email</span>
+              <input id="profileEmail" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="例如：name@gmail.com" />
+            </label>
+            <label class="profile-field field-wide">
+              <span><b>03</b>大學／學校</span>
+              <input id="profileUniversity" name="university" type="text" autocomplete="organization" placeholder="例如：國立臺灣海洋大學" />
+            </label>
+            <label class="profile-field">
+              <span><b>04</b>科系／系所</span>
+              <input id="profileDepartment" name="department" type="text" placeholder="例如：資訊工程學系" />
+            </label>
+            <label class="profile-field">
+              <span><b>05</b>年級</span>
+              <input id="profileGrade" name="grade" type="text" placeholder="例如：大三／碩一" />
+            </label>
+          </div>
+
+          <div class="match-note">
+            <i aria-hidden="true"></i>
+            <p><strong>填表時會顯示實際套用項目</strong><br>例如：已套用 姓名、Gmail、年級；沒有明確匹配就不使用。</p>
+          </div>
+          <p id="profileStatus" class="profile-status" role="status" aria-live="polite">五個欄位都是選填，儲存後可隨時修改。</p>
+          <div class="profile-actions">
+            <button class="profile-save" type="submit">
+              儲存到這台裝置
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+            <button id="profileClearButton" class="profile-clear" type="button">清除全部</button>
+          </div>
+        </form>
+      </div>
+    </section>
 
     <script src="app.js"></script>
   </body>

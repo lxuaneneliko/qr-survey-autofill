@@ -1,6 +1,7 @@
 package com.lxuan.qrsurvey;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,12 +26,15 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class FormFillActivity extends AppCompatActivity {
     public static final String EXTRA_URL = "form_url";
@@ -39,7 +43,12 @@ public class FormFillActivity extends AppCompatActivity {
     private WebView webView;
     private TextView statusView;
     private ProgressBar progressBar;
+    private String profileMatcherScript = "";
     private String autofillScript = "";
+    private final Set<String> appliedProfileLabels = new LinkedHashSet<>();
+    private int bestFilled = 0;
+    private int bestTotal = 0;
+    private int bestUnsupported = 0;
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
@@ -54,6 +63,7 @@ public class FormFillActivity extends AppCompatActivity {
         }
 
         try {
+            profileMatcherScript = readAsset("profile_matching.js");
             autofillScript = readAsset("form_autofill.js");
         } catch (IOException error) {
             Toast.makeText(this, "無法載入自動填寫功能", Toast.LENGTH_LONG).show();
@@ -74,7 +84,7 @@ public class FormFillActivity extends AppCompatActivity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " QRSurveyAutofill/1.1");
+        settings.setUserAgentString(settings.getUserAgentString() + " QRSurveyAutofill/1.5");
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -89,6 +99,17 @@ public class FormFillActivity extends AppCompatActivity {
             }
         });
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String pageUrl, Bitmap favicon) {
+                super.onPageStarted(view, pageUrl, favicon);
+                handler.removeCallbacksAndMessages(null);
+                appliedProfileLabels.clear();
+                bestFilled = 0;
+                bestTotal = 0;
+                bestUnsupported = 0;
+                statusView.setText("正在開啟表單…");
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -187,10 +208,27 @@ public class FormFillActivity extends AppCompatActivity {
 
     private void injectAutofill(long delayMillis) {
         handler.postDelayed(() -> {
-            if (webView != null && !autofillScript.isEmpty()) {
-                webView.evaluateJavascript(autofillScript, null);
+            if (webView != null && !profileMatcherScript.isEmpty() && !autofillScript.isEmpty()) {
+                String profileBootstrap = "window.__qrSurveyProfile = "
+                    + ProfilePlugin.readProfile(FormFillActivity.this).toString()
+                    + ";\n";
+                webView.evaluateJavascript(profileMatcherScript + "\n" + profileBootstrap + autofillScript, null);
             }
         }, delayMillis);
+    }
+
+    private void renderAutofillStatus() {
+        String profilePrefix = appliedProfileLabels.isEmpty()
+            ? ""
+            : "已套用 " + String.join("、", appliedProfileLabels) + "；";
+        if (bestFilled > 0) {
+            String suffix = bestUnsupported > 0 ? "，另有 " + bestUnsupported + " 題需手動處理" : "";
+            statusView.setText(profilePrefix + "已自動填寫 " + bestFilled + "／" + bestTotal + " 題" + suffix);
+        } else if (bestTotal > 0) {
+            statusView.setText(profilePrefix + "找到題目，但這個表單需手動處理");
+        } else {
+            statusView.setText("找不到可自動填寫的表單題目");
+        }
     }
 
     private boolean isSafeUrl(String value) {
@@ -229,14 +267,19 @@ public class FormFillActivity extends AppCompatActivity {
                     int filled = report.optInt("filled", 0);
                     int total = report.optInt("total", 0);
                     int unsupported = report.optInt("unsupported", 0);
-                    if (filled > 0) {
-                        String suffix = unsupported > 0 ? "，另有 " + unsupported + " 題需手動處理" : "";
-                        statusView.setText("已自動填寫 " + filled + "／" + total + " 題" + suffix);
-                    } else if (total > 0) {
-                        statusView.setText("找到題目，但這個表單需手動處理");
-                    } else {
-                        statusView.setText("找不到可自動填寫的表單題目");
+                    bestFilled = Math.max(bestFilled, filled);
+                    bestTotal = Math.max(bestTotal, total);
+                    bestUnsupported = Math.max(bestUnsupported, unsupported);
+                    JSONArray matches = report.optJSONArray("matches");
+                    if (matches != null) {
+                        for (int index = 0; index < matches.length(); index += 1) {
+                            String label = matches.optString(index, "");
+                            if (label.matches("姓名|Gmail|大學|科系|年級")) {
+                                appliedProfileLabels.add(label);
+                            }
+                        }
                     }
+                    renderAutofillStatus();
                 } catch (Exception error) {
                     statusView.setText("表單已開啟，請檢查自動填寫結果");
                 }
