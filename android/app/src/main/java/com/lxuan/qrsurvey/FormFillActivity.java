@@ -274,7 +274,7 @@ public class FormFillActivity extends AppCompatActivity {
                     if (matches != null) {
                         for (int index = 0; index < matches.length(); index += 1) {
                             String label = matches.optString(index, "");
-                            if (label.matches("姓名|Gmail|大學|科系|年級")) {
+                            if (label.matches("姓名|Gmail|大學|科系|年級|學號")) {
                                 appliedProfileLabels.add(label);
                             }
                         }

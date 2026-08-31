@@ -19,7 +19,7 @@
   const yyyy = String(now.getFullYear());
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const dd = String(now.getDate()).padStart(2, "0");
-  const profileFields = ["name", "email", "university", "department", "grade"];
+  const profileFields = ["name", "email", "university", "department", "grade", "studentId", "defaultAnswer"];
   const profile = {};
   for (const field of profileFields) profile[field] = normalize(window.__qrSurveyProfile && window.__qrSurveyProfile[field]);
 
@@ -70,7 +70,7 @@
     if (/姓名|名字|稱呼|name/.test(context)) return { value: "測試使用者", match: null };
     if (/學校|單位|公司|organization|company|school/.test(context)) return { value: "測試單位", match: null };
     if (/意見|建議|原因|心得|說明|描述|回饋|留言|comment|feedback|description|why/.test(context) || element.tagName === "TEXTAREA") {
-      return { value: "這是由掃表自動產生並填入的回覆。", match: null };
+      return { value: profile.defaultAnswer || "這是由掃表自動產生並填入的回覆。", match: null };
     }
     return { value: "自動填寫", match: null };
   }

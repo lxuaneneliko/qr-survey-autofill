@@ -158,6 +158,13 @@ body.url-editing .gallery-fab { opacity: 0; visibility: hidden; pointer-events: 
 .profile-field input { width: 100%; height: 52px; border: 0; border-bottom: 1px solid rgba(19,42,36,.22); border-radius: 0; padding: 0 4px; color: var(--ink); background: transparent; outline: none; font: 500 14px/1.2 "Avenir Next", "PingFang TC", "Microsoft JhengHei", sans-serif; transition: border-color .18s ease, background .18s ease; }
 .profile-field input::placeholder { color: #9aa9a4; font-size: 11px; }
 .profile-field input:focus { border-bottom-color: var(--ink); background: linear-gradient(180deg,transparent 76%,rgba(202,255,82,.2)); }
+.default-answer-field { margin-top: 25px; display: grid; gap: 9px; }
+.default-answer-field > span { display: flex; align-items: center; gap: 8px; color: #587168; font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+.default-answer-field > span b { color: var(--ink); background: var(--lime); border-radius: 10px; padding: 3px 7px; font-size: 7px; letter-spacing: .08em; }
+.default-answer-field textarea { width: 100%; min-height: 104px; resize: vertical; padding: 13px 14px; color: var(--ink); background: rgba(243,241,233,.64); border: 1px solid rgba(19,42,36,.18); border-radius: 14px 14px 5px 14px; outline: none; font: 500 13px/1.65 "Avenir Next", "PingFang TC", "Microsoft JhengHei", sans-serif; transition: border-color .18s ease, box-shadow .18s ease; }
+.default-answer-field textarea::placeholder { color: #9aa9a4; }
+.default-answer-field textarea:focus { border-color: rgba(19,42,36,.45); box-shadow: 0 0 0 4px rgba(202,255,82,.16); }
+.default-answer-field small { color: #80928c; font-size: 8px; line-height: 1.55; }
 .match-note { margin-top: 24px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 11px; color: #61776f; background: rgba(202,255,82,.11); border: 1px solid rgba(116,148,54,.13); border-radius: 14px 14px 4px 14px; }
 .match-note i { width: 9px; height: 9px; flex: 0 0 auto; margin-top: 4px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 5px rgba(202,255,82,.2); }
 .match-note p { margin: 0; font-size: 9px; line-height: 1.65; }

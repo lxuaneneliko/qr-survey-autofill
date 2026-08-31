@@ -18,7 +18,9 @@
   const profileProgress = document.getElementById("profileProgress");
   const profileForm = document.getElementById("profileForm");
   const profileStatus = document.getElementById("profileStatus");
-  const profileFields = ["name", "email", "university", "department", "grade"];
+  const defaultLongAnswer = "這是由掃表自動產生並填入的回覆。";
+  const personalProfileFields = ["name", "email", "university", "department", "grade", "studentId"];
+  const profileFields = [...personalProfileFields, "defaultAnswer"];
   const webProfileKey = "qr_survey_profile_v2";
   let busy = false;
   let hasScanned = false;
@@ -71,6 +73,7 @@
   function normalizedProfile(rawProfile) {
     const profile = {};
     for (const field of profileFields) profile[field] = String(rawProfile && rawProfile[field] || "").trim();
+    if (!profile.defaultAnswer) profile.defaultAnswer = defaultLongAnswer;
     return profile;
   }
 
@@ -83,9 +86,9 @@
       const control = profileForm.elements.namedItem(field);
       if (control) control.value = profile[field] || "";
     }
-    const completed = profileFields.filter((field) => profile[field]).length;
-    profileCount.textContent = `${completed}/5`;
-    profileProgress.textContent = completed > 0 ? `已設定 ${completed}／5` : "尚未設定";
+    const completed = personalProfileFields.filter((field) => profile[field]).length;
+    profileCount.textContent = `${completed}/6`;
+    profileProgress.textContent = completed > 0 ? `已設定 ${completed}／6` : "尚未設定";
     profileOpenButton.setAttribute("aria-label", completed > 0 ? `我的基本資料已設定 ${completed} 項` : "開啟我的基本資料");
   }
 
@@ -170,7 +173,7 @@
     try {
       const saved = normalizedProfile(await profileStore("saveProfile", profileFromForm()));
       renderProfile(saved);
-      const completed = profileFields.filter((field) => saved[field]).length;
+      const completed = personalProfileFields.filter((field) => saved[field]).length;
       setProfileStatus(completed > 0 ? `已儲存 ${completed} 項；掃表時只會套用明確相符的題目。` : "目前沒有填寫任何資料。", "success");
     } catch {
       setProfileStatus("儲存失敗，請重新開啟 App 後再試一次。", "error");

@@ -15,14 +15,16 @@ const profile = {
   university: "國立臺灣海洋大學",
   department: "資訊工程學系",
   grade: "大三",
+  studentId: "B01234567",
 };
 
-test("matches the five supported personal fields", () => {
+test("matches the six supported personal fields", () => {
   assert.equal(matcher.match(profile, "請填寫您的姓名", "text").key, "name");
   assert.equal(matcher.match(profile, "Gmail 電子信箱", "text").key, "email");
   assert.equal(matcher.match(profile, "目前就讀大學", "text").key, "university");
   assert.equal(matcher.match(profile, "科系／系所", "text").key, "department");
   assert.equal(matcher.match(profile, "目前年級", "select").key, "grade");
+  assert.equal(matcher.match(profile, "學生學號 Student ID", "text").key, "studentId");
 });
 
 test("does not leak profile data into third-party or ambiguous fields", () => {
@@ -31,6 +33,8 @@ test("does not leak profile data into third-party or ambiguous fields", () => {
   assert.equal(matcher.match(profile, "GPA 成績", "text"), null);
   assert.equal(matcher.match(profile, "學籍狀態", "select"), null);
   assert.equal(matcher.match(profile, "任職部門", "text"), null);
+  assert.equal(matcher.match(profile, "學籍狀態", "text"), null);
+  assert.equal(matcher.match(profile, "學號", "number"), null);
 });
 
 test("normalizes grade choices without accepting unrelated options", () => {

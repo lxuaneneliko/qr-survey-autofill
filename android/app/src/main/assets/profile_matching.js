@@ -46,6 +46,11 @@
       return result("email", "Gmail", profile.email, type === "email" ? 1 : 0.96, "email");
     }
 
+    if (profile.studentId && /學號|學生編號|student\s*(id|number|no\.?)/.test(context)) {
+      if (type === "number" && !/^\d+$/.test(normalize(profile.studentId))) return null;
+      return result("studentId", "學號", profile.studentId, 0.98, "student-id");
+    }
+
     if (profile.department && /系所|科系|學系|院系|主修|department|major/.test(context) && !workContext.test(context)) {
       return result("department", "科系", profile.department, 0.95, "department");
     }

@@ -13,10 +13,12 @@
       <div role="listitem"><h2 role="heading">目前就讀大學</h2><input id="university" type="text" /></div>
       <div role="listitem"><h2 role="heading">科系／系所</h2><input id="department" type="text" /></div>
       <div role="listitem"><h2 role="heading">目前年級</h2><select id="grade"><option value="">請選擇</option><option>大一</option><option>大二</option><option>三年級（大三）</option></select></div>
+      <div role="listitem"><h2 role="heading">學生學號 Student ID</h2><input id="studentId" type="text" /></div>
+      <div role="listitem"><h2 role="heading">請分享你的心得與建議</h2><textarea id="feedback"></textarea></div>
       <div role="listitem"><h2 role="heading">緊急聯絡人姓名</h2><input id="emergency" type="text" /></div>
     </form>
     <script>
-      window.__qrSurveyProfile = { name: "王小明", email: "ming@gmail.com", university: "國立臺灣海洋大學", department: "資訊工程學系", grade: "大三" };
+      window.__qrSurveyProfile = { name: "王小明", email: "ming@gmail.com", university: "國立臺灣海洋大學", department: "資訊工程學系", grade: "大三", studentId: "B01234567", defaultAnswer: "這是我自訂的預設回答。" };
       window.QRSurveyNative = { report(raw) { const report = document.getElementById("report"); report.dataset.result = raw; report.textContent = raw; } };
     </script>
     <script src="../../android/app/src/main/assets/profile_matching.js"></script>
