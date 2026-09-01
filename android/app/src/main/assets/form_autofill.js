@@ -5,6 +5,7 @@
   const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
   const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim();
   const matcher = window.QRSurveyProfileMatching || null;
+  const customMatcher = window.QRSurveyCustomRuleMatching || null;
   const visible = (element) => {
     if (!element || element.disabled || element.getAttribute("aria-disabled") === "true") return false;
     const style = window.getComputedStyle(element);
@@ -19,9 +20,13 @@
   const yyyy = String(now.getFullYear());
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const dd = String(now.getDate()).padStart(2, "0");
-  const profileFields = ["name", "email", "university", "department", "grade", "studentId", "defaultAnswer"];
+  const profileFields = ["name", "email", "university", "department", "grade", "studentId", "defaultAnswer", "customRules"];
   const profile = {};
-  for (const field of profileFields) profile[field] = normalize(window.__qrSurveyProfile && window.__qrSurveyProfile[field]);
+  for (const field of profileFields) {
+    const value = window.__qrSurveyProfile && window.__qrSurveyProfile[field];
+    profile[field] = field === "customRules" ? String(value || "").trim() : normalize(value);
+  }
+  const customRules = customMatcher ? customMatcher.parse(profile.customRules) : [];
 
   function contextText(element, root) {
     const labelledBy = element.getAttribute("aria-labelledby");
@@ -49,9 +54,19 @@
     return matcher ? matcher.match(profile, contextText(element, root), type) : null;
   }
 
+  function customRuleMatch(element, root) {
+    return customMatcher ? customMatcher.match(customRules, contextText(element, root)) : null;
+  }
+
+  function answerMatch(element, root, type) {
+    return profileMatch(element, root, type) || customRuleMatch(element, root);
+  }
+
   function generatedAnswer(element, root) {
     const context = contextText(element, root);
     const type = String(element.getAttribute("type") || "text").toLowerCase();
+    const matchedAnswer = answerMatch(element, root, type);
+    if (matchedAnswer) return { value: matchedAnswer.value, match: matchedAnswer };
     if (type === "date") return { value: `${yyyy}-${mm}-${dd}`, match: null };
     if (type === "time") return { value: "10:00", match: null };
     if (type === "datetime-local") return { value: `${yyyy}-${mm}-${dd}T10:00`, match: null };
@@ -61,8 +76,6 @@
     if (context.includes("月") && (context.includes("日期") || context.includes("生日"))) return { value: String(now.getMonth() + 1), match: null };
     if (context.includes("日") && (context.includes("日期") || context.includes("生日"))) return { value: String(now.getDate()), match: null };
 
-    const matchedProfile = profileMatch(element, root, type);
-    if (matchedProfile) return { value: matchedProfile.value, match: matchedProfile };
     if (type === "email" || /email|e-mail|電子郵件|信箱|郵件/.test(context)) return { value: "demo@example.com", match: null };
     if (type === "tel" || /電話|手機|聯絡號碼|phone|mobile/.test(context)) return { value: "0912345678", match: null };
     if (type === "url" || /網址|網站|url|website/.test(context)) return { value: "https://example.com", match: null };
@@ -113,7 +126,8 @@
   }
 
   function matchesPreferred(element, preferredValue) {
-    return Boolean(matcher && matcher.matchesOption(choiceText(element), preferredValue));
+    if (matcher) return matcher.matchesOption(choiceText(element), preferredValue);
+    return normalize(choiceText(element)).toLowerCase() === normalize(preferredValue).toLowerCase();
   }
 
   function chooseOne(elements, matchedProfile) {
@@ -220,7 +234,7 @@
     const selects = Array.from(root.querySelectorAll("select")).filter(visible);
     for (const select of selects) {
       if (select.selectedIndex > 0 || select.options.length <= 1) continue;
-      const matchedProfile = profileMatch(select, root, "select");
+      const matchedProfile = answerMatch(select, root, "select");
       const options = Array.from(select.options).filter((option) => !option.disabled && normalize(choiceText(option)));
       const preferredOption = matchedProfile
         ? options.find((option) => matchesPreferred(option, matchedProfile.value))
@@ -237,13 +251,13 @@
     const roleRadioGroups = Array.from(root.querySelectorAll('[role="radiogroup"]')).filter(visible);
     if (roleRadioGroups.length) {
       for (const group of roleRadioGroups) {
-        const matchedProfile = profileMatch(group, root, "radio");
+        const matchedProfile = answerMatch(group, root, "radio");
         const result = chooseOne(Array.from(group.querySelectorAll('[role="radio"]')), matchedProfile);
         if (result.applied) applied.add(result.applied.label);
       }
     } else {
       const roleRadios = Array.from(root.querySelectorAll('[role="radio"]'));
-      const matchedProfile = roleRadios.length ? profileMatch(roleRadios[0], root, "radio") : null;
+      const matchedProfile = roleRadios.length ? answerMatch(roleRadios[0], root, "radio") : null;
       const result = chooseOne(roleRadios, matchedProfile);
       if (result.applied) applied.add(result.applied.label);
     }
@@ -252,19 +266,27 @@
     const radioNames = new Set(nativeRadios.map((radio) => radio.name || "__unnamed"));
     for (const name of radioNames) {
       const radioGroup = nativeRadios.filter((radio) => (radio.name || "__unnamed") === name);
-      const matchedProfile = profileMatch(radioGroup[0], root, "radio");
+      const matchedProfile = answerMatch(radioGroup[0], root, "radio");
       const result = chooseOne(radioGroup, matchedProfile);
       if (result.applied) applied.add(result.applied.label);
     }
 
     const roleCheckboxes = Array.from(root.querySelectorAll('[role="checkbox"]')).filter(visible);
-    if (roleCheckboxes.length && !roleCheckboxes.some(isSelected)) safeClick(roleCheckboxes[0]);
+    if (roleCheckboxes.length && !roleCheckboxes.some(isSelected)) {
+      const matchedAnswer = answerMatch(roleCheckboxes[0], root, "checkbox");
+      const result = chooseOne(roleCheckboxes, matchedAnswer);
+      if (result.applied) applied.add(result.applied.label);
+    }
     const nativeCheckboxes = Array.from(root.querySelectorAll('input[type="checkbox"]')).filter(visible);
-    if (nativeCheckboxes.length && !nativeCheckboxes.some(isSelected)) safeClick(nativeCheckboxes[0]);
+    if (nativeCheckboxes.length && !nativeCheckboxes.some(isSelected)) {
+      const matchedAnswer = answerMatch(nativeCheckboxes[0], root, "checkbox");
+      const result = chooseOne(nativeCheckboxes, matchedAnswer);
+      if (result.applied) applied.add(result.applied.label);
+    }
 
     const listboxes = Array.from(root.querySelectorAll('[role="listbox"]')).filter(visible);
     for (const listbox of listboxes) {
-      const matchedProfile = profileMatch(listbox, root, "listbox");
+      const matchedProfile = answerMatch(listbox, root, "listbox");
       const result = await fillListbox(listbox, matchedProfile);
       if (result.applied) applied.add(result.applied.label);
     }

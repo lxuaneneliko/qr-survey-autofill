@@ -132,11 +132,27 @@
             <small>用於意見、建議、原因、心得、說明與其他長答題；仍可在送出前逐題修改。</small>
           </label>
 
+          <section class="custom-rules" aria-labelledby="customRulesTitle">
+            <div class="custom-rules-head">
+              <div>
+                <span>CUSTOM ANSWERS</span>
+                <h3 id="customRulesTitle">自訂關鍵詞回覆</h3>
+              </div>
+              <strong id="customRuleCount">0/12</strong>
+            </div>
+            <p>題目出現關鍵詞時就填入指定回覆；多個同義詞可用「、」分隔。</p>
+            <input id="customRulesValue" name="customRules" type="hidden" value="[]" />
+            <div id="customRulesList" class="custom-rules-list"></div>
+            <button id="addCustomRuleButton" class="custom-rule-add" type="button">
+              <span>＋</span>新增一組關鍵詞與回覆
+            </button>
+          </section>
+
           <div class="match-note">
             <i aria-hidden="true"></i>
-            <p><strong>填表時會顯示實際套用項目</strong><br>例如：已套用 姓名、Gmail、年級；沒有明確匹配就不使用。</p>
+            <p><strong>套用順序：基本資料 → 自訂回覆 → 通用回答</strong><br>填表頂端會顯示實際套用項目；沒有明確匹配就不使用個人或自訂內容。</p>
           </div>
-          <p id="profileStatus" class="profile-status" role="status" aria-live="polite">六項基本資料都是選填，預設回答也可隨時修改。</p>
+          <p id="profileStatus" class="profile-status" role="status" aria-live="polite">六項基本資料與自訂回覆都是選填，也可隨時修改。</p>
           <div class="profile-actions">
             <button class="profile-save" type="submit">
               儲存到這台裝置

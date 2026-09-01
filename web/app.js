@@ -18,9 +18,14 @@
   const profileProgress = document.getElementById("profileProgress");
   const profileForm = document.getElementById("profileForm");
   const profileStatus = document.getElementById("profileStatus");
+  const customRulesList = document.getElementById("customRulesList");
+  const customRulesValue = document.getElementById("customRulesValue");
+  const customRuleCount = document.getElementById("customRuleCount");
+  const addCustomRuleButton = document.getElementById("addCustomRuleButton");
   const defaultLongAnswer = "這是由掃表自動產生並填入的回覆。";
   const personalProfileFields = ["name", "email", "university", "department", "grade", "studentId"];
-  const profileFields = [...personalProfileFields, "defaultAnswer"];
+  const profileFields = [...personalProfileFields, "defaultAnswer", "customRules"];
+  const maxCustomRules = 12;
   const webProfileKey = "qr_survey_profile_v2";
   let busy = false;
   let hasScanned = false;
@@ -70,15 +75,125 @@
     scannerWindow.classList.remove("is-busy");
   }
 
+  function normalizeCustomRules(rawRules) {
+    let rules = rawRules;
+    if (typeof rules === "string") {
+      try {
+        rules = JSON.parse(rules || "[]");
+      } catch {
+        rules = [];
+      }
+    }
+    if (!Array.isArray(rules)) return [];
+    return rules.slice(0, maxCustomRules).map((rule) => ({
+      keyword: String(rule && rule.keyword || "").trim().slice(0, 120),
+      reply: String(rule && (rule.reply ?? rule.response) || "").trim().slice(0, 500),
+    })).filter((rule) => rule.keyword && rule.reply);
+  }
+
   function normalizedProfile(rawProfile) {
     const profile = {};
-    for (const field of profileFields) profile[field] = String(rawProfile && rawProfile[field] || "").trim();
+    for (const field of profileFields) {
+      profile[field] = field === "customRules"
+        ? JSON.stringify(normalizeCustomRules(rawProfile && rawProfile[field]))
+        : String(rawProfile && rawProfile[field] || "").trim();
+    }
     if (!profile.defaultAnswer) profile.defaultAnswer = defaultLongAnswer;
     return profile;
   }
 
   function profileFromForm() {
-    return normalizedProfile(Object.fromEntries(new FormData(profileForm).entries()));
+    const profile = Object.fromEntries(new FormData(profileForm).entries());
+    profile.customRules = JSON.stringify(collectCustomRules(true));
+    return normalizedProfile(profile);
+  }
+
+  function collectCustomRules(strict) {
+    const rules = [];
+    for (const row of customRulesList.querySelectorAll(".custom-rule-row")) {
+      const keyword = row.querySelector(".custom-rule-keyword").value.trim();
+      const reply = row.querySelector(".custom-rule-reply").value.trim();
+      if (strict && Boolean(keyword) !== Boolean(reply)) {
+        const missing = keyword ? row.querySelector(".custom-rule-reply") : row.querySelector(".custom-rule-keyword");
+        missing.focus();
+        throw new Error("每組自訂規則都要同時填寫關鍵詞與回覆。");
+      }
+      if (keyword && reply) rules.push({ keyword, reply });
+    }
+    return rules.slice(0, maxCustomRules);
+  }
+
+  function updateCustomRuleUi() {
+    const rows = Array.from(customRulesList.querySelectorAll(".custom-rule-row"));
+    const completed = rows.filter((row) => {
+      return row.querySelector(".custom-rule-keyword").value.trim()
+        && row.querySelector(".custom-rule-reply").value.trim();
+    }).length;
+    customRuleCount.textContent = `${completed}/${maxCustomRules}`;
+    addCustomRuleButton.disabled = rows.length >= maxCustomRules;
+  }
+
+  function createCustomRuleRow(rule, index) {
+    const row = document.createElement("article");
+    row.className = "custom-rule-row";
+
+    const head = document.createElement("div");
+    head.className = "custom-rule-row-head";
+    const number = document.createElement("span");
+    number.textContent = String(index + 1).padStart(2, "0");
+    const title = document.createElement("b");
+    title.textContent = "題目比對規則";
+    const remove = document.createElement("button");
+    remove.className = "custom-rule-remove";
+    remove.type = "button";
+    remove.setAttribute("aria-label", `刪除第 ${index + 1} 組規則`);
+    remove.textContent = "刪除";
+    head.append(number, title, remove);
+
+    const keywordLabel = document.createElement("label");
+    keywordLabel.className = "custom-rule-field";
+    const keywordTitle = document.createElement("span");
+    keywordTitle.textContent = "預設詞／題目關鍵詞";
+    const keyword = document.createElement("input");
+    keyword.className = "custom-rule-keyword";
+    keyword.type = "text";
+    keyword.maxLength = 120;
+    keyword.placeholder = "例如：最喜歡的顏色、偏好顏色";
+    keyword.value = rule.keyword || "";
+    keywordLabel.append(keywordTitle, keyword);
+
+    const replyLabel = document.createElement("label");
+    replyLabel.className = "custom-rule-field";
+    const replyTitle = document.createElement("span");
+    replyTitle.textContent = "回覆";
+    const reply = document.createElement("textarea");
+    reply.className = "custom-rule-reply";
+    reply.rows = 2;
+    reply.maxLength = 500;
+    reply.placeholder = "例如：綠色";
+    reply.value = rule.reply || "";
+    replyLabel.append(replyTitle, reply);
+
+    row.append(head, keywordLabel, replyLabel);
+    return row;
+  }
+
+  function renderCustomRules(rawRules) {
+    const rules = normalizeCustomRules(rawRules);
+    customRulesList.replaceChildren();
+    const visibleRules = rules.length ? rules : [{ keyword: "", reply: "" }];
+    visibleRules.forEach((rule, index) => customRulesList.append(createCustomRuleRow(rule, index)));
+    customRulesValue.value = JSON.stringify(rules);
+    updateCustomRuleUi();
+  }
+
+  function addCustomRule() {
+    const count = customRulesList.querySelectorAll(".custom-rule-row").length;
+    if (count >= maxCustomRules) return;
+    const row = createCustomRuleRow({ keyword: "", reply: "" }, count);
+    customRulesList.append(row);
+    updateCustomRuleUi();
+    row.querySelector(".custom-rule-keyword").focus();
   }
 
   function renderProfile(profile) {
@@ -86,6 +201,7 @@
       const control = profileForm.elements.namedItem(field);
       if (control) control.value = profile[field] || "";
     }
+    renderCustomRules(profile.customRules);
     const completed = personalProfileFields.filter((field) => profile[field]).length;
     profileCount.textContent = `${completed}/6`;
     profileProgress.textContent = completed > 0 ? `已設定 ${completed}／6` : "尚未設定";
@@ -168,13 +284,26 @@
   async function saveProfile(event) {
     event.preventDefault();
     if (!profileForm.reportValidity()) return;
+    let profile;
+    try {
+      profile = profileFromForm();
+    } catch (error) {
+      setProfileStatus(error.message, "error");
+      return;
+    }
     profileForm.classList.add("is-saving");
     setProfileStatus("正在儲存到這台裝置…", "ready");
     try {
-      const saved = normalizedProfile(await profileStore("saveProfile", profileFromForm()));
+      const saved = normalizedProfile(await profileStore("saveProfile", profile));
       renderProfile(saved);
       const completed = personalProfileFields.filter((field) => saved[field]).length;
-      setProfileStatus(completed > 0 ? `已儲存 ${completed} 項；掃表時只會套用明確相符的題目。` : "目前沒有填寫任何資料。", "success");
+      const rules = normalizeCustomRules(saved.customRules).length;
+      setProfileStatus(
+        completed > 0 || rules > 0
+          ? `已儲存 ${completed} 項基本資料與 ${rules} 組自訂回覆；只會套用明確相符的題目。`
+          : "目前沒有填寫任何資料或自訂回覆。",
+        "success"
+      );
     } catch {
       setProfileStatus("儲存失敗，請重新開啟 App 後再試一次。", "error");
     } finally {
@@ -183,12 +312,12 @@
   }
 
   async function clearProfile() {
-    if (!window.confirm("確定要清除這台裝置上的全部基本資料嗎？")) return;
+    if (!window.confirm("確定要清除這台裝置上的全部基本資料與自訂回覆嗎？")) return;
     profileForm.classList.add("is-saving");
     try {
       const cleared = normalizedProfile(await profileStore("clearProfile"));
       renderProfile(cleared);
-      setProfileStatus("基本資料已全部清除。", "success");
+      setProfileStatus("基本資料與自訂回覆已全部清除。", "success");
     } catch {
       setProfileStatus("清除失敗，請稍後再試一次。", "error");
     } finally {
@@ -333,6 +462,20 @@
   profileBackButton.addEventListener("click", closeProfile);
   profileForm.addEventListener("submit", saveProfile);
   profileClearButton.addEventListener("click", clearProfile);
+  addCustomRuleButton.addEventListener("click", addCustomRule);
+  customRulesList.addEventListener("input", updateCustomRuleUi);
+  customRulesList.addEventListener("click", (event) => {
+    const remove = event.target.closest(".custom-rule-remove");
+    if (!remove) return;
+    remove.closest(".custom-rule-row").remove();
+    const rows = Array.from(customRulesList.querySelectorAll(".custom-rule-row"));
+    if (!rows.length) customRulesList.append(createCustomRuleRow({ keyword: "", reply: "" }, 0));
+    Array.from(customRulesList.querySelectorAll(".custom-rule-row")).forEach((row, index) => {
+      row.querySelector(".custom-rule-row-head span").textContent = String(index + 1).padStart(2, "0");
+      row.querySelector(".custom-rule-remove").setAttribute("aria-label", `刪除第 ${index + 1} 組規則`);
+    });
+    updateCustomRuleUi();
+  });
   bindHorizontalSwipe(homePage, "right", openProfile);
   bindHorizontalSwipe(profilePage, "left", closeProfile);
   void loadProfile();

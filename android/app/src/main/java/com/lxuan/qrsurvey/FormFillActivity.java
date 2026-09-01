@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FormFillActivity extends AppCompatActivity {
     public static final String EXTRA_URL = "form_url";
@@ -44,6 +45,7 @@ public class FormFillActivity extends AppCompatActivity {
     private TextView statusView;
     private ProgressBar progressBar;
     private String profileMatcherScript = "";
+    private String customRuleMatcherScript = "";
     private String autofillScript = "";
     private final Set<String> appliedProfileLabels = new LinkedHashSet<>();
     private int bestFilled = 0;
@@ -64,6 +66,7 @@ public class FormFillActivity extends AppCompatActivity {
 
         try {
             profileMatcherScript = readAsset("profile_matching.js");
+            customRuleMatcherScript = readAsset("custom_rule_matching.js");
             autofillScript = readAsset("form_autofill.js");
         } catch (IOException error) {
             Toast.makeText(this, "無法載入自動填寫功能", Toast.LENGTH_LONG).show();
@@ -84,7 +87,7 @@ public class FormFillActivity extends AppCompatActivity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " QRSurveyAutofill/1.5");
+        settings.setUserAgentString(settings.getUserAgentString() + " QRSurveyAutofill/1.7");
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -208,19 +211,19 @@ public class FormFillActivity extends AppCompatActivity {
 
     private void injectAutofill(long delayMillis) {
         handler.postDelayed(() -> {
-            if (webView != null && !profileMatcherScript.isEmpty() && !autofillScript.isEmpty()) {
+            if (webView != null && !profileMatcherScript.isEmpty() && !customRuleMatcherScript.isEmpty() && !autofillScript.isEmpty()) {
                 String profileBootstrap = "window.__qrSurveyProfile = "
                     + ProfilePlugin.readProfile(FormFillActivity.this).toString()
                     + ";\n";
-                webView.evaluateJavascript(profileMatcherScript + "\n" + profileBootstrap + autofillScript, null);
+                webView.evaluateJavascript(profileMatcherScript + "\n" + customRuleMatcherScript + "\n" + profileBootstrap + autofillScript, null);
             }
         }, delayMillis);
     }
 
     private void renderAutofillStatus() {
-        String profilePrefix = appliedProfileLabels.isEmpty()
-            ? ""
-            : "已套用 " + String.join("、", appliedProfileLabels) + "；";
+        String appliedSummary = appliedProfileLabels.stream().limit(3).collect(Collectors.joining("、"));
+        if (appliedProfileLabels.size() > 3) appliedSummary += "等 " + appliedProfileLabels.size() + " 項";
+        String profilePrefix = appliedSummary.isEmpty() ? "" : "已套用 " + appliedSummary + "；";
         if (bestFilled > 0) {
             String suffix = bestUnsupported > 0 ? "，另有 " + bestUnsupported + " 題需手動處理" : "";
             statusView.setText(profilePrefix + "已自動填寫 " + bestFilled + "／" + bestTotal + " 題" + suffix);
@@ -276,6 +279,10 @@ public class FormFillActivity extends AppCompatActivity {
                             String label = matches.optString(index, "");
                             if (label.matches("姓名|Gmail|大學|科系|年級|學號")) {
                                 appliedProfileLabels.add(label);
+                            } else if (label.startsWith("自訂：")) {
+                                String cleanLabel = label.replaceAll("[\\r\\n]", " ").trim();
+                                if (cleanLabel.length() > 24) cleanLabel = cleanLabel.substring(0, 24) + "…";
+                                appliedProfileLabels.add(cleanLabel);
                             }
                         }
                     }

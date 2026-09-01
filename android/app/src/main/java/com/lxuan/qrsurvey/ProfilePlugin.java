@@ -18,7 +18,7 @@ import java.util.Map;
 public class ProfilePlugin extends Plugin {
     private static final String STORE_NAME = "qr_survey_profile_v2";
     private static final String[] FIELDS = {
-        "name", "email", "university", "department", "grade", "studentId", "defaultAnswer"
+        "name", "email", "university", "department", "grade", "studentId", "defaultAnswer", "customRules"
     };
 
     @PluginMethod

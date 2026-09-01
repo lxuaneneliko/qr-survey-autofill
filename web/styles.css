@@ -165,6 +165,28 @@ body.url-editing .gallery-fab { opacity: 0; visibility: hidden; pointer-events: 
 .default-answer-field textarea::placeholder { color: #9aa9a4; }
 .default-answer-field textarea:focus { border-color: rgba(19,42,36,.45); box-shadow: 0 0 0 4px rgba(202,255,82,.16); }
 .default-answer-field small { color: #80928c; font-size: 8px; line-height: 1.55; }
+.custom-rules { margin-top: 29px; padding-top: 25px; border-top: 1px solid var(--line); }
+.custom-rules-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.custom-rules-head span { color: #789087; font-size: 7px; font-weight: 900; letter-spacing: .18em; }
+.custom-rules-head h3 { margin: 4px 0 0; font: 600 18px/1.2 "Iowan Old Style", "Noto Serif TC", serif; letter-spacing: .04em; }
+.custom-rules-head strong { min-width: 42px; height: 24px; display: grid; place-items: center; color: var(--ink); background: var(--lime); border-radius: 12px; font-size: 8px; }
+.custom-rules > p { margin: 10px 0 15px; color: #80928c; font-size: 8px; line-height: 1.6; }
+.custom-rules-list { display: grid; gap: 12px; }
+.custom-rule-row { padding: 14px 15px 16px; display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 12px 14px; background: rgba(243,241,233,.58); border: 1px solid rgba(19,42,36,.13); border-radius: 16px 16px 5px 16px; }
+.custom-rule-row-head { grid-column: 1 / -1; padding-bottom: 9px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(19,42,36,.1); }
+.custom-rule-row-head span { color: #90a099; font: 9px "Iowan Old Style", serif; }
+.custom-rule-row-head b { color: #587168; font-size: 8px; letter-spacing: .05em; }
+.custom-rule-remove { margin-left: auto; padding: 4px 1px; color: #8a756d; background: transparent; border: 0; font-size: 8px; font-weight: 800; cursor: pointer; }
+.custom-rule-field { min-width: 0; display: grid; align-content: start; gap: 7px; }
+.custom-rule-field > span { color: #587168; font-size: 9px; font-weight: 800; }
+.custom-rule-field input, .custom-rule-field textarea { width: 100%; color: var(--ink); background: rgba(255,255,255,.72); border: 1px solid rgba(19,42,36,.14); border-radius: 11px 11px 4px 11px; outline: none; font: 500 11px/1.5 "Avenir Next", "PingFang TC", "Microsoft JhengHei", sans-serif; transition: border-color .18s ease, box-shadow .18s ease; }
+.custom-rule-field input { height: 43px; padding: 0 11px; }
+.custom-rule-field textarea { min-height: 66px; padding: 10px 11px; resize: vertical; }
+.custom-rule-field input::placeholder, .custom-rule-field textarea::placeholder { color: #9aa9a4; }
+.custom-rule-field input:focus, .custom-rule-field textarea:focus { border-color: rgba(19,42,36,.44); box-shadow: 0 0 0 3px rgba(202,255,82,.16); }
+.custom-rule-add { width: 100%; min-height: 46px; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 9px; color: var(--ink); background: rgba(202,255,82,.14); border: 1px dashed rgba(19,42,36,.27); border-radius: 13px 13px 4px 13px; font-size: 9px; font-weight: 900; cursor: pointer; }
+.custom-rule-add span { font-size: 16px; font-weight: 500; line-height: 1; }
+.custom-rule-add:disabled { opacity: .45; cursor: not-allowed; }
 .match-note { margin-top: 24px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 11px; color: #61776f; background: rgba(202,255,82,.11); border: 1px solid rgba(116,148,54,.13); border-radius: 14px 14px 4px 14px; }
 .match-note i { width: 9px; height: 9px; flex: 0 0 auto; margin-top: 4px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 5px rgba(202,255,82,.2); }
 .match-note p { margin: 0; font-size: 9px; line-height: 1.65; }
@@ -211,5 +233,7 @@ body.url-editing .gallery-fab { opacity: 0; visibility: hidden; pointer-events: 
   .field-grid { grid-template-columns: 1fr; gap: 16px; }
   .profile-field.field-wide { grid-column: auto; }
   .profile-field input { height: 47px; }
+  .custom-rule-row { grid-template-columns: 1fr; }
+  .custom-rule-row-head { grid-column: auto; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
