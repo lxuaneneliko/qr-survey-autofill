@@ -87,7 +87,7 @@ public class FormFillActivity extends AppCompatActivity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " QRSurveyAutofill/1.7");
+        settings.setUserAgentString(settings.getUserAgentString() + " QRSurveyAutofill/1.8");
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -225,10 +225,11 @@ public class FormFillActivity extends AppCompatActivity {
         if (appliedProfileLabels.size() > 3) appliedSummary += "等 " + appliedProfileLabels.size() + " 項";
         String profilePrefix = appliedSummary.isEmpty() ? "" : "已套用 " + appliedSummary + "；";
         if (bestFilled > 0) {
-            String suffix = bestUnsupported > 0 ? "，另有 " + bestUnsupported + " 題需手動處理" : "";
+            int remaining = Math.max(bestUnsupported, bestTotal - bestFilled);
+            String suffix = remaining > 0 ? "，另有 " + remaining + " 題需手動處理" : "";
             statusView.setText(profilePrefix + "已自動填寫 " + bestFilled + "／" + bestTotal + " 題" + suffix);
         } else if (bestTotal > 0) {
-            statusView.setText(profilePrefix + "找到題目，但這個表單需手動處理");
+            statusView.setText(profilePrefix + "找到 " + bestTotal + " 題，但尚需手動處理");
         } else {
             statusView.setText("找不到可自動填寫的表單題目");
         }

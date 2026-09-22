@@ -4,6 +4,8 @@
 
   const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
   const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  const defaultTextAnswer = "無";
+  const legacyDefaultAnswer = "這是由掃表自動產生並填入的回覆。";
   const matcher = window.QRSurveyProfileMatching || null;
   const customMatcher = window.QRSurveyCustomRuleMatching || null;
   const visible = (element) => {
@@ -26,7 +28,9 @@
     const value = window.__qrSurveyProfile && window.__qrSurveyProfile[field];
     profile[field] = field === "customRules" ? String(value || "").trim() : normalize(value);
   }
+  if (!profile.defaultAnswer || profile.defaultAnswer === legacyDefaultAnswer) profile.defaultAnswer = defaultTextAnswer;
   const customRules = customMatcher ? customMatcher.parse(profile.customRules) : [];
+  const textControlSelector = 'textarea, input:not([type]), input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="number"], input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"], input[type="week"], [contenteditable="true"]';
 
   function contextText(element, root) {
     const labelledBy = element.getAttribute("aria-labelledby");
@@ -37,7 +41,8 @@
       ? normalize(document.querySelector(`label[for="${escapeSelector(element.id)}"]`)?.textContent)
       : "";
     const wrappingLabel = normalize(element.closest("label")?.textContent);
-    const heading = normalize(root.querySelector('[role="heading"], legend, h1, h2, h3, h4, .question-title')?.textContent);
+    const heading = normalize((root.querySelector('[role="heading"], legend, h1, h2, h3, h4, .question-title')
+      || root.closest('[role="listitem"], [data-automation-id="questionItem"], [data-question-id]')?.querySelector('[role="heading"], legend, h1, h2, h3, h4, .question-title'))?.textContent);
     return normalize([
       labelledText,
       explicitLabel,
@@ -80,20 +85,33 @@
     if (type === "tel" || /電話|手機|聯絡號碼|phone|mobile/.test(context)) return { value: "0912345678", match: null };
     if (type === "url" || /網址|網站|url|website/.test(context)) return { value: "https://example.com", match: null };
     if (type === "number" || /年齡|歲數|數量|人數|age|number/.test(context)) return { value: "20", match: null };
-    if (/姓名|名字|稱呼|name/.test(context)) return { value: "測試使用者", match: null };
-    if (/學校|單位|公司|organization|company|school/.test(context)) return { value: "測試單位", match: null };
-    if (/意見|建議|原因|心得|說明|描述|回饋|留言|comment|feedback|description|why/.test(context) || element.tagName === "TEXTAREA") {
-      return { value: profile.defaultAnswer || "這是由掃表自動產生並填入的回覆。", match: null };
-    }
-    return { value: "自動填寫", match: null };
+    return { value: profile.defaultAnswer, match: null };
   }
 
   function setValue(element, value) {
-    if (!visible(element) || normalize(element.value)) return false;
+    if (!visible(element)) return false;
+    if (element.isContentEditable) {
+      if (normalize(element.textContent)) return false;
+      element.focus();
+      element.textContent = value;
+      const inputEvent = typeof InputEvent === "function"
+        ? new InputEvent("input", { bubbles: true, composed: true, data: value, inputType: "insertText" })
+        : new Event("input", { bubbles: true, composed: true });
+      element.dispatchEvent(inputEvent);
+      element.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+      element.blur();
+      return true;
+    }
+    if (normalize(element.value)) return false;
     const prototype = element.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
     const descriptor = Object.getOwnPropertyDescriptor(prototype, "value");
     if (descriptor && descriptor.set) descriptor.set.call(element, value);
     else element.value = value;
+    if (!normalize(element.value) || (element.validity && !element.validity.valid)) {
+      if (descriptor && descriptor.set) descriptor.set.call(element, "");
+      else element.value = "";
+      return false;
+    }
     element.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
     element.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
     element.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
@@ -178,35 +196,31 @@
       ".survey-question",
       "fieldset",
     ];
-    const controlSelector = 'input, textarea, select, [role="radio"], [role="checkbox"], [role="listbox"]';
-
-    for (const selector of selectors) {
-      const candidates = Array.from(document.querySelectorAll(selector)).filter((root) => {
-        if (!visible(root) || !root.querySelector(controlSelector)) return false;
-        if (selector === 'div[role="listitem"]' && !root.querySelector('[role="heading"]')) return false;
-        return true;
-      });
-      const leafCandidates = candidates.filter((candidate) => {
-        return !candidates.some((other) => other !== candidate && candidate.contains(other));
-      });
-      if (leafCandidates.length) return leafCandidates;
-    }
-
-    const controls = Array.from(document.querySelectorAll("form input, form textarea, form select")).filter((element) => {
-      const type = String(element.getAttribute("type") || "").toLowerCase();
-      return visible(element) && !["hidden", "submit", "reset", "button", "image"].includes(type);
+    const controlSelector = 'input, textarea, select, [role="radio"], [role="checkbox"], [role="listbox"], [contenteditable="true"]';
+    const candidates = selectors.flatMap((selector) => Array.from(document.querySelectorAll(selector))).filter((root) => {
+      if (!visible(root) || !root.querySelector(controlSelector)) return false;
+      if (root.matches('div[role="listitem"]') && !root.querySelector('[role="heading"]')) return false;
+      return true;
     });
-    const roots = [];
+    const roots = [...new Set(candidates.filter((candidate) => !candidates.some((other) => other !== candidate && candidate.contains(other))))];
+
+    const controls = Array.from(document.querySelectorAll(controlSelector)).filter((element) => {
+      const type = String(element.getAttribute("type") || "").toLowerCase();
+      return (element.closest("form") || candidates.some((candidate) => candidate.contains(element)))
+        && (visible(element) || (type === "file" && visible(element.parentElement)))
+        && !["hidden", "submit", "reset", "button", "image"].includes(type);
+    });
     for (const control of controls) {
-      const root = control.closest("fieldset, label, [role='group'], div") || control.parentElement;
-      if (root && !roots.includes(root)) roots.push(root);
+      if (roots.some((root) => root.contains(control))) continue;
+      const root = control.closest("fieldset, [role='group'], label") || control.parentElement;
+      if (root && !roots.some((existing) => existing === root || existing.contains(root))) roots.push(root);
     }
     return roots;
   }
 
   function rootAnswered(root) {
-    const textInputs = Array.from(root.querySelectorAll('textarea, input:not([type]), input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="number"], input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"], input[type="week"]'));
-    if (textInputs.some((element) => visible(element) && normalize(element.value))) return true;
+    const textInputs = Array.from(root.querySelectorAll(textControlSelector));
+    if (textInputs.some((element) => visible(element) && normalize(element.isContentEditable ? element.textContent : element.value))) return true;
     const choices = Array.from(root.querySelectorAll('input[type="radio"], input[type="checkbox"], [role="radio"], [role="checkbox"]'));
     if (choices.some(isSelected)) return true;
     const selects = Array.from(root.querySelectorAll("select"));
@@ -220,12 +234,10 @@
   }
 
   async function fillRoot(root) {
-    const fileInputs = Array.from(root.querySelectorAll('input[type="file"]')).filter(visible);
+    const fileInputs = Array.from(root.querySelectorAll('input[type="file"]'));
     const applied = new Set();
 
-    const textInputs = Array.from(root.querySelectorAll(
-      'textarea, input:not([type]), input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="number"], input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"], input[type="week"]'
-    )).filter(visible);
+    const textInputs = Array.from(root.querySelectorAll(textControlSelector)).filter(visible);
     for (const input of textInputs) {
       const answer = generatedAnswer(input, root);
       if (setValue(input, answer.value) && answer.match) applied.add(answer.match.label);

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head><meta charset="utf-8" /><title>Mixed form autofill fixture</title></head>
+  <body>
+    <output id="report"></output>
+    <form>
+      <div role="listitem"><h2 role="heading">一般簡答</h2><input id="short" type="text" /></div>
+      <fieldset><legend>請分享心得</legend><textarea id="long"></textarea></fieldset>
+      <div class="survey-question"><h2>請選擇選項</h2><select id="choice"><option value="">請選擇</option><option value="a">甲</option><option value="b">乙</option></select></div>
+      <div><label>其他說明 <input id="plain" type="text" /></label></div>
+      <div class="question-row"><h2>補充說明</h2><div id="editable" role="textbox" contenteditable="true"></div></div>
+      <div><label>已手動填寫 <input id="manual" type="text" value="手動內容" /></label></div>
+      <div class="survey-question"><h2>聯絡信箱</h2><input id="invalidEmail" type="email" /></div>
+      <div class="survey-question"><h2>上傳附件</h2><input type="file" style="display:none" /><button type="button">選擇檔案</button></div>
+    </form>
+    <script>
+      window.__qrSurveyProfile = { defaultAnswer: "這是由掃表自動產生並填入的回覆。", customRules: "[{\"keyword\":\"聯絡信箱\",\"reply\":\"無\"}]" };
+      window.QRSurveyNative = { report(raw) {
+        document.getElementById("report").textContent = JSON.stringify({
+          summary: JSON.parse(raw),
+          short: document.getElementById("short").value,
+          long: document.getElementById("long").value,
+          choice: document.getElementById("choice").value,
+          plain: document.getElementById("plain").value,
+          editable: document.getElementById("editable").textContent,
+          manual: document.getElementById("manual").value,
+          invalidEmail: document.getElementById("invalidEmail").value
+        });
+      } };
+    </script>
+    <script src="../../android/app/src/main/assets/profile_matching.js"></script>
+    <script src="../../android/app/src/main/assets/custom_rule_matching.js"></script>
+    <script src="../../android/app/src/main/assets/form_autofill.js"></script>
+  </body>
+</html>

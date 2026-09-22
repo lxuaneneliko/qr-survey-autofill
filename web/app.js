@@ -22,7 +22,8 @@
   const customRulesValue = document.getElementById("customRulesValue");
   const customRuleCount = document.getElementById("customRuleCount");
   const addCustomRuleButton = document.getElementById("addCustomRuleButton");
-  const defaultLongAnswer = "這是由掃表自動產生並填入的回覆。";
+  const defaultTextAnswer = "無";
+  const legacyDefaultAnswer = "這是由掃表自動產生並填入的回覆。";
   const personalProfileFields = ["name", "email", "university", "department", "grade", "studentId"];
   const profileFields = [...personalProfileFields, "defaultAnswer", "customRules"];
   const maxCustomRules = 12;
@@ -98,7 +99,7 @@
         ? JSON.stringify(normalizeCustomRules(rawProfile && rawProfile[field]))
         : String(rawProfile && rawProfile[field] || "").trim();
     }
-    if (!profile.defaultAnswer) profile.defaultAnswer = defaultLongAnswer;
+    if (!profile.defaultAnswer || profile.defaultAnswer === legacyDefaultAnswer) profile.defaultAnswer = defaultTextAnswer;
     return profile;
   }
 

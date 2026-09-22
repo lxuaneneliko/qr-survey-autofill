@@ -17,6 +17,7 @@ import java.util.Map;
 @CapacitorPlugin(name = "Profile")
 public class ProfilePlugin extends Plugin {
     private static final String STORE_NAME = "qr_survey_profile_v2";
+    private static final String LEGACY_DEFAULT_ANSWER = "這是由掃表自動產生並填入的回覆。";
     private static final String[] FIELDS = {
         "name", "email", "university", "department", "grade", "studentId", "defaultAnswer", "customRules"
     };
@@ -26,7 +27,7 @@ public class ProfilePlugin extends Plugin {
         JSObject response = new JSObject();
         SharedPreferences preferences = preferences(getContext());
         for (String field : FIELDS) {
-            response.put(field, preferences.getString(field, ""));
+            response.put(field, storedValue(preferences, field));
         }
         call.resolve(response);
     }
@@ -52,12 +53,17 @@ public class ProfilePlugin extends Plugin {
         SharedPreferences preferences = preferences(context);
         Map<String, String> values = new LinkedHashMap<>();
         for (String field : FIELDS) {
-            values.put(field, preferences.getString(field, ""));
+            values.put(field, storedValue(preferences, field));
         }
         return new JSONObject(values);
     }
 
     private static SharedPreferences preferences(Context context) {
         return context.getSharedPreferences(STORE_NAME, Context.MODE_PRIVATE);
+    }
+
+    private static String storedValue(SharedPreferences preferences, String field) {
+        String value = preferences.getString(field, "");
+        return "defaultAnswer".equals(field) && LEGACY_DEFAULT_ANSWER.equals(value) ? "無" : value;
     }
 }

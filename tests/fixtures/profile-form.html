@@ -21,7 +21,17 @@
     </form>
     <script>
       window.__qrSurveyProfile = { name: "王小明", email: "ming@gmail.com", university: "國立臺灣海洋大學", department: "資訊工程學系", grade: "大三", studentId: "B01234567", defaultAnswer: "這是我自訂的預設回答。", customRules: "[{\"keyword\":\"最喜歡的顏色、偏好顏色\",\"reply\":\"綠色\"},{\"keyword\":\"最喜歡的飲料\",\"reply\":\"咖啡\"}]" };
-      window.QRSurveyNative = { report(raw) { const report = document.getElementById("report"); report.dataset.result = raw; report.textContent = raw; } };
+      window.QRSurveyNative = { report(raw) {
+        const report = document.getElementById("report");
+        report.textContent = JSON.stringify({
+          summary: JSON.parse(raw),
+          name: document.getElementById("name").value,
+          studentId: document.getElementById("studentId").value,
+          favoriteColor: document.getElementById("favoriteColor").value,
+          favoriteDrink: document.getElementById("favoriteDrink").value,
+          feedback: document.getElementById("feedback").value
+        });
+      } };
     </script>
     <script src="../../android/app/src/main/assets/profile_matching.js"></script>
     <script src="../../android/app/src/main/assets/custom_rule_matching.js"></script>
